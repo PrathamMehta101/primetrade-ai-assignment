@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PrimeTrade Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #fff;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h2 {
+        color: #38bdf8;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: auto;
+      }
+
+      .card {
+        background: #1e293b;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      input {
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        border: none;
+        border-radius: 5px;
+        outline: none;
+      }
+
+      button {
+        padding: 10px 15px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        background: #38bdf8;
+        color: black;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background: #0ea5e9;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        background: #334155;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .status {
+        font-size: 12px;
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>🚀 PrimeTrade Task Manager</h1>
+
+      <div class="card">
+        <h2>Register</h2>
+        <input id="regName" placeholder="Name" />
+        <input id="regEmail" placeholder="Email" />
+        <input id="regPass" type="password" placeholder="Password" />
+        <button onclick="register()">Register</button>
+      </div>
+
+      <div class="card">
+        <h2>Login</h2>
+        <input id="loginEmail" placeholder="Email" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+      </div>
+
+      <div class="card">
+        <h2>Create Task</h2>
+        <input id="taskTitle" placeholder="Task Title" />
+        <button onclick="createTask()">Create Task</button>
+      </div>
+
+      <div class="card">
+        <h2>Your Tasks</h2>
+        <button onclick="getTasks()">Refresh</button>
+        <ul id="taskList"></ul>
+      </div>
+    </div>
+
+    <script>
+      let token = "";
+
+      async function register() {
+        const res = await fetch("http://localhost:5000/api/v1/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: regName.value,
+            email: regEmail.value,
+            password: regPass.value,
+          }),
+        });
+        alert(await res.text());
+      }
+
+      async function login() {
+        const res = await fetch("http://localhost:5000/api/v1/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: loginEmail.value,
+            password: loginPass.value,
+          }),
+        });
+        const data = await res.json();
+        token = data.token;
+        alert("Logged in successfully");
+      }
+
+      async function createTask() {
+        const res = await fetch("http://localhost:5000/api/v1/tasks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({
+            title: taskTitle.value,
+          }),
+        });
+        alert(await res.text());
+      }
+
+      async function getTasks() {
+        const res = await fetch("http://localhost:5000/api/v1/tasks", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
+
+        const data = await res.json();
+        taskList.innerHTML = "";
+
+        data.forEach((task) => {
+          const li = document.createElement("li");
+
+          li.innerHTML = `
+      <span>${task.title}</span>
+      <span class="status">${task.completed ? "✅ Done" : "⏳ Pending"}</span>
+    `;
+
+          taskList.appendChild(li);
+        });
+      }
+    </script>
+  </body>
+</html>
