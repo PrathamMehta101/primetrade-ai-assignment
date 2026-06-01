@@ -38,6 +38,7 @@
       }
 
       button {
+        margin-left: 5px;
         padding: 10px 15px;
         margin-top: 10px;
         border: none;
@@ -104,10 +105,15 @@
         <ul id="taskList"></ul>
       </div>
     </div>
-
     <script>
-      let token = "";
+      let token = localStorage.getItem("token") || "";
 
+      // AUTO LOAD TASKS IF TOKEN EXISTS
+      if (token) {
+        getTasks();
+      }
+
+      // REGISTER
       async function register() {
         const res = await fetch("http://localhost:5000/api/v1/auth/register", {
           method: "POST",
@@ -118,9 +124,11 @@
             password: regPass.value,
           }),
         });
+
         alert(await res.text());
       }
 
+      // LOGIN
       async function login() {
         const res = await fetch("http://localhost:5000/api/v1/auth/login", {
           method: "POST",
@@ -130,11 +138,17 @@
             password: loginPass.value,
           }),
         });
+
         const data = await res.json();
+
         token = data.token;
-        alert("Logged in successfully");
+        localStorage.setItem("token", token);
+
+        alert("Logged in ✅");
+        getTasks();
       }
 
+      // CREATE TASK
       async function createTask() {
         const res = await fetch("http://localhost:5000/api/v1/tasks", {
           method: "POST",
@@ -146,9 +160,12 @@
             title: taskTitle.value,
           }),
         });
-        alert(await res.text());
+
+        taskTitle.value = "";
+        getTasks();
       }
 
+      // GET TASKS
       async function getTasks() {
         const res = await fetch("http://localhost:5000/api/v1/tasks", {
           headers: {
@@ -164,11 +181,44 @@
 
           li.innerHTML = `
       <span>${task.title}</span>
-      <span class="status">${task.completed ? "✅ Done" : "⏳ Pending"}</span>
+      <div>
+        <button onclick="toggleTask('${task._id}', ${task.completed})">
+          ${task.completed ? "Undo" : "Done"}
+        </button>
+        <button onclick="deleteTask('${task._id}')">Delete</button>
+      </div>
     `;
 
           taskList.appendChild(li);
         });
+      }
+
+      // TOGGLE COMPLETE
+      async function toggleTask(id, completed) {
+        await fetch(`http://localhost:5000/api/v1/tasks/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({
+            completed: !completed,
+          }),
+        });
+
+        getTasks();
+      }
+
+      // DELETE TASK
+      async function deleteTask(id) {
+        await fetch(`http://localhost:5000/api/v1/tasks/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
+
+        getTasks();
       }
     </script>
   </body>
