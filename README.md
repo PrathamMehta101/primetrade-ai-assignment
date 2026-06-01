@@ -1,6 +1,8 @@
 # 🚀 PrimeTrade Backend Assignment
 
-A scalable full-stack task management system built with Node.js, featuring secure authentication, role-based access control, and a clean API architecture.
+## 🎥 WORKING DEMO
+
+👉 https://youtu.be/Tr7vcd_WY_M
 
 ---
 
@@ -121,7 +123,7 @@ npm install
 
 Create a `.env` file:
 
-```env
+```
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/primetrade-ai-assignment
 JWT_SECRET=your_secret_key
